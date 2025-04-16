@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Live Bar Graph</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      margin: 30px;
+    }
+
+    .graph-section {
+      max-width: 800px;
+      margin: auto;
+      border: 1px solid #ccc;
+      padding: 20px;
+    }
+
+    .graph-container {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-around;
+      height: 300px;
+    }
+
+    .bar-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 40px;
+    }
+
+    .bar {
+      width: 30px;
+      transition: height 0.3s;
+    }
+
+    .label {
+      margin-top: 5px;
+      font-size: 14px;
+      word-wrap: break-word;
+      max-width: 50px;
+      text-align: center;
+    }
+
+    .value {
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Live Bar Graph</h1>
+
+  <div class="graph-section">
+    <div class="graph-container" id="graph"></div>
+  </div>
+
+  <script>
+    const graphDiv = document.getElementById('graph');
+
+    function renderGraph() {
+      const bars = JSON.parse(localStorage.getItem('barData')) || [];
+      graphDiv.innerHTML = "";
+
+      bars.forEach(({ name, value, visible, color }) => {
+        if (!visible) return;
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'bar-wrapper';
+
+        const valueLabel = document.createElement('div');
+        valueLabel.className = 'value';
+        valueLabel.textContent = value;
+
+        const bar = document.createElement('div');
+        bar.className = 'bar';
+        bar.style.height = `${value * 2}px`;
+        bar.style.backgroundColor = color || 'steelblue';
+
+        const label = document.createElement('div');
+        label.className = 'label';
+        label.textContent = name;
+
+        wrapper.appendChild(valueLabel);
+        wrapper.appendChild(bar);
+        wrapper.appendChild(label);
+        graphDiv.appendChild(wrapper);
+      });
+    }
+
+    renderGraph();
+    setInterval(renderGraph, 1000); // refresh every second
+  </script>
+</body>
+</html>

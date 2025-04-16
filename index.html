@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Real-Time Bar Graph</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      margin: 20px;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-around;
+      align-items: flex-start;
+    }
+
+    .input-section {
+      width: 40%;
+      text-align: left;
+    }
+
+    .bar-block {
+      margin-bottom: 15px;
+    }
+
+    .controls {
+      margin-top: 5px;
+    }
+
+    .controls button {
+      margin-right: 5px;
+    }
+
+    .graph-section {
+      width: 55%;
+      border: 1px solid #ccc;
+      padding: 10px;
+    }
+
+    .graph-container {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-around;
+      height: 300px;
+    }
+
+    .bar-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 40px;
+    }
+
+    .bar {
+      width: 30px;
+      transition: height 0.3s;
+    }
+
+    .label {
+      margin-top: 5px;
+      font-size: 14px;
+      word-wrap: break-word;
+      max-width: 40px;
+      text-align: center;
+    }
+
+    .value {
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Real-Time Bar Graph Editor</h1>
+
+  <div class="container">
+    <div class="input-section" id="inputs"></div>
+
+    <div class="graph-section">
+      <h3>Live Bar Graph</h3>
+      <div class="graph-container" id="graph"></div>
+    </div>
+  </div>
+
+<div style="text-align: left; margin-top: 20px;">
+  <button onclick="resetAllValues()">🔄 Reset All Values</button>
+</div>
+  
+  <script>
+    const inputsDiv = document.getElementById('inputs');
+    const graphDiv = document.getElementById('graph');
+
+    function getRandomColor() {
+      const hue = Math.floor(Math.random() * 360);
+      return `hsl(${hue}, 70%, 50%)`;
+    }
+
+    // Initialize or load bars
+    let bars = JSON.parse(localStorage.getItem('barData')) || Array.from({ length: 8 }, () => ({
+      name: "",
+      value: 0,
+      visible: true,
+      color: getRandomColor()
+    }));
+
+    function renderInputs() {
+      inputsDiv.innerHTML = "";
+      bars.forEach((bar, i) => {
+        const section = document.createElement('div');
+        section.className = 'bar-block';
+        section.innerHTML = `
+          <label>Bar ${i + 1} Name:
+            <input type="text" name="name${i}" value="${bar.name}" oninput="updateBar(${i}, 'name', this.value)">
+          </label><br>
+          <label>Bar ${i + 1} Value:
+            <input type="number" id="value${i}" name="value${i}" value="${bar.value}" min="0" max="100"
+              onchange="updateBar(${i}, 'value', this.value)">
+          </label><br>
+          <label>
+            <input type="checkbox" id="visible${i}" ${bar.visible ? "checked" : ""} 
+              onchange="updateBar(${i}, 'visible', this.checked)">
+            Show Bar
+          </label><br>
+          <div class="controls">
+            <button type="button" onclick="adjustValue(${i}, 1)">+1</button>
+            <button type="button" onclick="adjustValue(${i}, -1)">-1</button>
+          </div>
+          <hr>
+        `;
+        inputsDiv.appendChild(section);
+      });
+    }
+
+    function renderGraph() {
+      graphDiv.innerHTML = "";
+      bars.forEach(({ name, value, visible, color }) => {
+        if (!visible) return;
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'bar-wrapper';
+
+        const valueLabel = document.createElement('div');
+        valueLabel.className = 'value';
+        valueLabel.textContent = value;
+
+        const bar = document.createElement('div');
+        bar.className = 'bar';
+        bar.style.height = `${value * 2}px`;
+        bar.style.backgroundColor = color;
+
+        const label = document.createElement('div');
+        label.className = 'label';
+        label.textContent = name;
+
+        wrapper.appendChild(valueLabel);
+        wrapper.appendChild(bar);
+        wrapper.appendChild(label);
+        graphDiv.appendChild(wrapper);
+      });
+    }
+
+    function updateBar(index, type, val) {
+      if (type === 'name') {
+        bars[index].name = val;
+      } else if (type === 'value') {
+        bars[index].value = Math.max(0, parseInt(val));
+      } else if (type === 'visible') {
+        bars[index].visible = val;
+      }
+      localStorage.setItem('barData', JSON.stringify(bars));
+      renderGraph();
+    }
+
+    function adjustValue(index, delta) {
+      bars[index].value = Math.max(0, bars[index].value + delta);
+      document.getElementById(`value${index}`).value = bars[index].value;
+      localStorage.setItem('barData', JSON.stringify(bars));
+      renderGraph();
+    }
+
+    function resetAllValues() {
+    if (!confirm("Are you sure you want to reset all values to 0?")) return;
+    bars = bars.map(bar => ({ ...bar, value: 0 }));
+    localStorage.setItem('barData', JSON.stringify(bars));
+    renderInputs();
+    renderGraph();
+  }
+
+
+    
+// Initial render
+    renderInputs();
+    renderGraph();
+  </script>
+</body>
+</html>

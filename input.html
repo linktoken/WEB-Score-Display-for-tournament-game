@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Set Bar Names and Values</title>
+  <style>
+    .bar-block {
+      margin-bottom: 15px;
+    }
+    .controls {
+      margin-top: 5px;
+    }
+    .controls button {
+      margin-right: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Set Bar Names and Values</h1>
+  <form id="barForm">
+    <div id="inputs"></div>
+    <button type="submit">Save & View Graph</button>
+  </form>
+
+  <script>
+    const inputsDiv = document.getElementById('inputs');
+
+    for (let i = 0; i < 8; i++) {
+      const section = document.createElement('div');
+      section.className = 'bar-block';
+      section.innerHTML = `
+        <label>Bar ${i + 1} Name: 
+          <input type="text" name="name${i}" required>
+        </label><br>
+        <label>Bar ${i + 1} Value: 
+          <input type="number" name="value${i}" value="0" min="0" max="100" required id="value${i}">
+        </label><br>
+        <div class="controls">
+          <button type="button" onclick="adjustValue(${i}, 1)">+1</button>
+          <button type="button" onclick="adjustValue(${i}, -1)">-1</button>
+        </div>
+        <hr>
+      `;
+      inputsDiv.appendChild(section);
+    }
+
+    function adjustValue(index, delta) {
+      const input = document.getElementById(`value${index}`);
+      let current = parseInt(input.value, 10) || 0;
+      current += delta;
+      if (current < 0) current = 0;
+      input.value = current;
+    }
+
+    document.getElementById('barForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const bars = [];
+      for (let i = 0; i < 8; i++) {
+        const name = document.querySelector(`input[name="name${i}"]`).value;
+        const value = parseInt(document.querySelector(`input[name="value${i}"]`).value, 10);
+        bars.push({ name, value });
+      }
+      localStorage.setItem('barData', JSON.stringify(bars));
+      window.location.href = 'graph.html';
+    });
+  </script>
+</body>
+</html>
